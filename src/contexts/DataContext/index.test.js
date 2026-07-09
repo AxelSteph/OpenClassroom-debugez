@@ -34,6 +34,28 @@ describe("When a data context is created", () => {
       expect(dataDisplayed).toBeInTheDocument();
     });
   });
+
+  it("exposes the latest event as last", async () => {
+    api.loadData = jest.fn().mockResolvedValue({
+      events: [
+        { id: 1, title: "Older event", date: "2022-01-01T00:00:00.000Z" },
+        { id: 2, title: "Latest event", date: "2024-01-01T00:00:00.000Z" },
+      ],
+    });
+
+    const Component = () => {
+      const { last } = useData();
+      return <div>{last?.title}</div>;
+    };
+
+    render(
+      <DataProvider>
+        <Component />
+      </DataProvider>
+    );
+
+    expect(await screen.findByText("Latest event")).toBeInTheDocument();
+  });
   it("api.loadData", () => {
     window.console.error = jest.fn();
     global.fetch = jest.fn().mockResolvedValue(() =>
