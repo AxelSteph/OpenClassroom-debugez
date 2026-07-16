@@ -27,11 +27,18 @@ export const DataProvider = ({ children }) => {
       setError(err);
     }
   }, []);
+
+  // Lance le chargement des données une seule fois.
+  // Avant la modification, useEffect n'avait pas de dépendances et pouvait
+  // relancer getData de manière incorrecte à chaque rendu.
   useEffect(() => {
     if (data) return;
     getData();
   }, [data, getData]);
 
+  // Calcule le dernier événement à partir des données chargées.
+  // Avant, `last` n'existait pas du tout dans le contexte, donc
+  // la page d'accueil recevait undefined pour la carte du dernier événement.
   const last = data?.events?.reduce((latest, event) => {
     if (!latest) return event;
     return new Date(event.date) > new Date(latest.date) ? event : latest;
