@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useData } from "../../contexts/DataContext";
 import { getMonth } from "../../helpers/Date";
 
@@ -8,8 +8,8 @@ const Slider = () => {
   const { data } = useData();
   const [index, setIndex] = useState(0);
   const byDateDesc = data?.focus.sort((evtA, evtB) =>
-    new Date(evtA.date) < new Date(evtB.date) ? -1 : 1
-  );
+    new Date(evtA.date) < new Date(evtB.date) ? -1 : 1,
+  ) || [];
   const nextCard = () => {
     setTimeout(
       () => setIndex(index < byDateDesc.length-1 ? index + 1 : 0),
@@ -22,9 +22,8 @@ const Slider = () => {
   return (
     <div className="SlideCardList">
       {byDateDesc?.map((event, idx) => (
-        <Fragment key={event.id}>
+        <div key={event.title}>
           <div
-            key={event.id}
             className={`SlideCard SlideCard--${
               index === idx ? "display" : "hide"
             }`}
@@ -42,15 +41,17 @@ const Slider = () => {
             <div className="SlideCard__pagination">
               {byDateDesc.map((_, radioIdx) => (
                 <input
-                  key={byDateDesc[radioIdx].id}
+                  key={byDateDesc[radioIdx].title}
                   type="radio"
                   name="radio-button"
                   checked={index === radioIdx}
+                  // onCahange={() => setIndex(radioIdx)}
+                  readOnly
                 />
               ))}
             </div>
           </div>
-        </Fragment>
+        </div>
       ))}
     </div>
   );
