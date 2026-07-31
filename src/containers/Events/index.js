@@ -13,32 +13,25 @@ const EventList = () => {
   const { data, error } = useData();
   const [type, setType] = useState();
   const [currentPage, setCurrentPage] = useState(1);
-  // (!type
-    // ? data?.events
-    // : data?.events) || []
-    // )
-    // Cela renvoie la même chose qu'importe le filtre
-  
-  const filteredEvents = (
-  (!type
-    ? data?.events
-    : data?.events.filter((event) => event.type === type)) || []
-).filter((event, index) => {
-  if (
-    (currentPage - 1) * PER_PAGE <= index &&
-    PER_PAGE * currentPage > index
-  ) {
-    return true;
-  }
-  return false;
-});
+
+  const filteredEvents =
+    (!type
+      ? data?.events
+      : data?.events.filter((event) => event.type === type)) || [];
+
+  const pageNumber = Math.ceil(filteredEvents.length / PER_PAGE);
+
+  const paginatedEvents = filteredEvents.filter(
+    (event, index) =>
+      (currentPage - 1) * PER_PAGE <= index && PER_PAGE * currentPage > index,
+  );
+
   const changeType = (evtType) => {
     setCurrentPage(1);
     setType(evtType);
   };
-  // Il y avait une page en trop à cause d'un + 1 ajouté dans le calcul du nombre de pages. Cela faisait que la pagination affichait une page vide à la fin.
-  const pageNumber = Math.floor((filteredEvents?.length || 0) / PER_PAGE);
-  const typeList = new Set(data?.events.map((event) => event.type));
+
+  const typeList = new Set(data?.events?.map((event) => event.type) || []);
   return (
     <>
       {error && <div>An error occured</div>}
@@ -51,8 +44,12 @@ const EventList = () => {
             selection={Array.from(typeList)}
             onChange={(value) => (value ? changeType(value) : changeType(null))}
           />
-          <div id="events" className="ListContainer">
-            {filteredEvents.map((event) => (
+          <div
+            key={`${type || "all"}-${currentPage}`}
+            id="events"
+            className="ListContainer"
+          >
+            {paginatedEvents.map((event) => (
               <Modal key={event.id} Content={<ModalEvent event={event} />}>
                 {({ setIsOpened }) => (
                   <EventCard
@@ -66,12 +63,17 @@ const EventList = () => {
               </Modal>
             ))}
           </div>
+
           <div className="Pagination">
-            {[...Array(pageNumber || 0)].map((_, n) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <a key={n} href="#events" onClick={() => setCurrentPage(n + 1)}>
+            {[...Array(pageNumber)].map((_, n) => (
+              <button
+                // eslint-disable-next-line react/no-array-index-key
+                key={n}
+                type="button"
+                onClick={() => setCurrentPage(n + 1)}
+              >
                 {n + 1}
-              </a>
+              </button>
             ))}
           </div>
         </>
