@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Menu from "../../containers/Menu";
 import ServiceCard from "../../components/ServiceCard";
 import EventCard from "../../components/EventCard";
@@ -12,8 +13,19 @@ import Form from "../../containers/Form";
 import Modal from "../../containers/Modal";
 import { useData } from "../../contexts/DataContext";
 
+const successMessage = (
+  <div className="ModalMessage--success">
+    <div>Message envoyé !</div>
+    <p>
+      Merci pour votre message nous tâcherons de vous répondre dans les plus
+      brefs délais
+    </p>
+  </div>
+);
+
 const Page = () => {
   const {last} = useData()
+  const [modalContent, setModalContent] = useState(successMessage);
   return <>
     <header>
       <Menu />
@@ -93,21 +105,27 @@ const Page = () => {
       </section>
       <div className="FormContainer" id="contact">
         <h2 className="Title">Contact</h2>
-        <Modal
-          Content={
-            <div className="ModalMessage--success">
-              <div>Message envoyé !</div>
-              <p>
-                Merci pour votre message nous tâcherons de vous répondre dans
-                les plus brefs délais
-              </p>
-            </div>
-          }
-        >
+        <Modal Content={modalContent}>
           {({ setIsOpened }) => (
             <Form
-              onSuccess={() => setIsOpened(true)}
-              onError={() => null}
+              onSuccess={() => {
+                setModalContent(successMessage);
+                setIsOpened(true);
+              }}
+              onError={(validationErrors) => {
+                if (!Array.isArray(validationErrors)) return;
+                setModalContent(
+                  <div className="ModalMessage--success" role="alert">
+                    <div>Veuillez corriger les champs suivants</div>
+                    <ul>
+                      {validationErrors.map((error) => (
+                        <li key={error}>{error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+                setIsOpened(true);
+              }}
             />
           )}
         </Modal>
